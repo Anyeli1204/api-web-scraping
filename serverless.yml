@@ -25,15 +25,15 @@ functions:
 
 resources:
   Resources:
-    TablaWebScrapping:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: TablaWebScrapping
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
+    TablaSismosIGP:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: TablaSismosIGP
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+    BillingMode: PAY_PER_REQUEST
 
