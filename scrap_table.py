@@ -5,18 +5,9 @@ import json
 URL = "https://ultimosismo.igp.gob.pe/ultimo-sismo/sismos-reportados"
 
 def obtener_10_ultimos_sismos():
-    # Headers para simular un navegador real
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-    }
-    
     try:
         # Hacer petición GET a la URL
-        response = requests.get(URL, headers=headers, timeout=10)
+        response = requests.get(URL, timeout=10)
         response.raise_for_status()  # Lanza excepción si hay error HTTP
         
         # Parsear el HTML con BeautifulSoup
@@ -81,4 +72,3 @@ def lambda_handler(event, context):
             },
             "body": json.dumps({"error": str(e)})
         }
-
