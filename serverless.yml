@@ -5,20 +5,20 @@ service: api-web-scraping
 provider:
   name: aws
   runtime: python3.12
-  memorySize: 1024
+  memorySize: 512
   timeout: 30
   iam:
     role: arn:aws:iam::456183835700:role/LabRole
 
 functions:
-  scrape_table:
-    handler: scrap_table.lambda_handler
+  scrape_igp:
+    handler: scrap_igp_local.lambda_handler
     package:
       include:
-        - ./**       # Incluir todo el contenido del directorio
+        - ./**
     events:
       - http:
-          path: scrape/table
+          path: scrape/igp
           method: get
           cors: true
           integration: lambda
@@ -36,3 +36,5 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+
+        
