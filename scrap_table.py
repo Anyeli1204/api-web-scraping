@@ -1,13 +1,22 @@
 import requests
-from bs4 import BeautifulSoup
 import json
+from bs4 import BeautifulSoup
 
 URL = "https://ultimosismo.igp.gob.pe/ultimo-sismo/sismos-reportados"
 
 def obtener_10_ultimos_sismos():
+    # Headers para simular un navegador real
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    }
+    
     try:
         # Hacer petición GET a la URL
-        response = requests.get(URL, timeout=10)
+        response = requests.get(URL, headers=headers, timeout=10)
         response.raise_for_status()  # Lanza excepción si hay error HTTP
         
         # Parsear el HTML con BeautifulSoup
@@ -50,9 +59,6 @@ def obtener_10_ultimos_sismos():
         raise Exception(f"Error al hacer la petición HTTP: {e}")
 
 def lambda_handler(event, context):
-    """
-    Handler para AWS Lambda
-    """
     try:
         sismos = obtener_10_ultimos_sismos()
         return {
@@ -61,7 +67,7 @@ def lambda_handler(event, context):
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
-            "body": json.dumps(sismos)
+            "body": json.dumps(sismos, ensure_ascii=False)
         }
     except Exception as e:
         return {
@@ -70,5 +76,10 @@ def lambda_handler(event, context):
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"error": str(e)}, ensure_ascii=False)
         }
+
+if __name__ == "__main__":
+    datos = obtener_10_ultimos_sismos()
+    for s in datos:
+        print(s)
