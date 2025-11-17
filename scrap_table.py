@@ -5,8 +5,8 @@ import boto3
 import requests
 from bs4 import BeautifulSoup
 
-URL = "https://ultimosismo.igp.gob.pe/ultimo-sismo/sismos-reportados"
-TABLE_NAME = "TablaSismosIGP"  
+URL = "https://www.igp.gob.pe/servicios/centro-sismologico-nacional/ultimo-sismo/sismos-reportados"
+TABLE_NAME = "TablaSismosIGP"
 
 
 def obtener_10_ultimos_sismos():
@@ -65,11 +65,13 @@ def lambda_handler(event, context):
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(TABLE_NAME)
 
+    # Borrar registros anteriores
     scan = table.scan()
     with table.batch_writer() as batch:
         for item in scan.get("Items", []):
             batch.delete_item(Key={"id": item["id"]})
 
+    # Insertar los 10 sismos
     items = []
     with table.batch_writer() as batch:
         for s in sismos:
@@ -83,6 +85,7 @@ def lambda_handler(event, context):
             }
             batch.put_item(Item=item)
             items.append(item)
+
     return {
         "statusCode": 200,
         "body": json.dumps(items, ensure_ascii=False),
