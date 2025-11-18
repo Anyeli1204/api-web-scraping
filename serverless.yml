@@ -2,26 +2,38 @@ org: anyelitamara
 
 service: api-web-scraping
 
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    layer: false
+
 provider:
   name: aws
   runtime: python3.12
-  memorySize: 512
-  timeout: 30
+  memorySize: 3008
+  timeout: 60
   iam:
     role: arn:aws:iam::456183835700:role/LabRole
 
 functions:
   scrape_igp:
-    handler: scrap_igp_local.lambda_handler
-    package:
-      include:
-        - ./**
+    handler: scrap_table.lambda_handler
+    layers:
+      - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:41
     events:
       - http:
           path: scrape/igp
           method: get
           cors: true
-          integration: lambda
+
+package:
+  exclude:
+    - node_modules/**
+    - .git/**
+    - .serverless/**
+    - '*.md'
+    - '*.sh'
+    - scrap_igp_local.py
 
 resources:
   Resources:
@@ -36,5 +48,3 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-
-        
