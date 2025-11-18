@@ -10,16 +10,14 @@ custom:
 provider:
   name: aws
   runtime: python3.12
-  memorySize: 3008
-  timeout: 60
+  memorySize: 512
+  timeout: 30
   iam:
     role: arn:aws:iam::456183835700:role/LabRole
 
 functions:
   scrape_igp:
-    handler: scrap_table.lambda_handler
-    layers:
-      - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:41
+    handler: scrap_igp_local.lambda_handler
     events:
       - http:
           path: scrape/igp
@@ -33,7 +31,7 @@ package:
     - .serverless/**
     - '*.md'
     - '*.sh'
-    - scrap_igp_local.py
+    - scrap_table.py
 
 resources:
   Resources:
