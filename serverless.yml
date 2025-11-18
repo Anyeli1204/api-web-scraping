@@ -4,7 +4,7 @@ service: api-web-scraping
 
 custom:
   pythonRequirements:
-    dockerizePip: non-linux
+    dockerizePip: false
     layer: false
 
 provider:
