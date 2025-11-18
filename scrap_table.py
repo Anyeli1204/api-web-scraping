@@ -8,6 +8,10 @@ def obtener_10_ultimos_sismos():
     Realiza web scraping real de la página del IGP usando Selenium.
     Espera a que JavaScript cargue la tabla y luego extrae los datos del HTML renderizado.
     """
+    # Deshabilitar Selenium Manager ANTES de importar selenium
+    os.environ['SE_MANAGER'] = 'false'
+    os.environ['SELENIUM_MANAGER'] = 'false'
+    
     try:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
@@ -31,20 +35,52 @@ def obtener_10_ultimos_sismos():
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
-    # Para Lambda, Chrome debe estar en /opt/bin/headless-chromium o usar chromedriver-binary
+    # Para Lambda, Chrome debe estar en /opt/bin/headless-chromium
     # En desarrollo local, usará Chrome del sistema
     driver = None
     
     try:
-        # Intentar configuración para Lambda
+        # Intentar configuración para Lambda primero
         if os.path.exists("/opt/bin/headless-chromium"):
-            # Lambda con Layer
+            # Lambda con Layer de Chrome
             chrome_options.binary_location = "/opt/bin/headless-chromium"
-            if os.path.exists("/opt/bin/chromedriver"):
-                service = Service("/opt/bin/chromedriver")
+            chrome_options.add_argument("--single-process")
+            chrome_options.add_argument("--disable-software-rasterizer")
+            
+            # Buscar chromedriver en diferentes ubicaciones posibles
+            chromedriver_paths = [
+                "/opt/bin/chromedriver",
+                "/opt/chromedriver",
+                "/usr/local/bin/chromedriver"
+            ]
+            
+            chromedriver_path = None
+            for path in chromedriver_paths:
+                if os.path.exists(path):
+                    chromedriver_path = path
+                    break
+            
+            if chromedriver_path:
+                # Usar el chromedriver de la capa explícitamente
+                service = Service(chromedriver_path)
                 driver = webdriver.Chrome(service=service, options=chrome_options)
             else:
-                driver = webdriver.Chrome(options=chrome_options)
+                # Si no encontramos chromedriver en la capa, usar chromedriver-binary como respaldo
+                try:
+                    from chromedriver_binary import chromedriver_filename
+                    service = Service(chromedriver_filename)
+                    driver = webdriver.Chrome(service=service, options=chrome_options)
+                except ImportError:
+                    # Si chromedriver-binary no está disponible, buscar en PATH
+                    import shutil
+                    chromedriver = shutil.which("chromedriver")
+                    if chromedriver:
+                        service = Service(chromedriver)
+                        driver = webdriver.Chrome(service=service, options=chrome_options)
+                    else:
+                        raise Exception("No se encontró chromedriver en Lambda. Verifica que la capa de Chrome esté correctamente configurada o que chromedriver-binary esté instalado.")
+                except Exception as e:
+                    raise Exception(f"No se pudo inicializar Chrome con chromedriver-binary. Error: {e}")
         else:
             # Desarrollo local - usar Chrome del sistema
             try:
